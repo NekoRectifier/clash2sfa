@@ -79,7 +79,7 @@
                     <span style="width: max-content;">配置文件选项</span>
                     <select style="width: min-content;" v-model="configType" @change="onChange">
                         <option selected value="">根据 UA 自动选择</option>
-                        <option value="0">1.10-</option>
+                        <option value="0">1.12+-</option>
                         <option value="1">1.11+</option>
                         <option value="2">自定义模板</option>
                         <option value="3">自定义模板直链</option>
@@ -237,16 +237,11 @@
             function onChange() {
                 outFields.value = ""
                 if (configType.value === "0") {
-                    configurl.value = "config.json.template"
+                    configurl.value = "config.json-1.12.X+.template"
                     outFields.value = "1"
                 } else if (configType.value === "1") {
                     configurl.value = "config.json-1.11.0+.template"
                     outFields.value = "0"
-                } else if (configType.value === "2") {
-                    configurl.value = ""
-                    if (config.value == "") {
-                        config.value = oldConfig
-                    }
                 } else if (configType.value === "3") {
                     config.value = ""
                 }
