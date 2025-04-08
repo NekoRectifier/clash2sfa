@@ -1,0 +1,145 @@
+{
+  "experimental": {
+    "cache_file": {
+      "enabled": true
+    },
+    "clash_api": {
+      "external_controller": "127.0.0.1:9090",
+      "secret": ""
+    }
+  },
+  "log": {
+    "level": "info"
+  },
+  "dns": {
+    "servers": [
+      {
+        "type": "local",
+        "tag": "dns_local"
+      },
+      {
+        "type": "https",
+        "tag": "dns_domestic_https",
+        "server": "doh.pub",
+        "path": "dns_query",
+        "domain_resolver": "dns_local"
+      },
+      {
+        "type": "tcp",
+        "tag": "dns_global_tcp",
+        "server": "1.1.1.1",
+        "server_port": 53
+      }
+    ],
+    "rules": [
+      {
+        "rule_set": "geosite-dnsblock",
+        "action": "reject"
+      },
+      {
+        "network_type": [
+          "wifi",
+          "cellular"
+        ],
+        "action": "route",
+        "server": "dns_local"
+      },
+      {
+        "clash_mode": "global",
+        "action": "route",
+        "server": "dns_global_tcp"
+      }
+    ],
+    "strategy": "prefer_ipv4",
+    "independent_cache": true,
+    "cache_capacity": 1048576
+  },
+  "inbounds": [
+    {
+      "type": "tun",
+      "tag": "entry-tun",
+      "mtu": 9000,
+      "address": [
+        "172.19.0.1/30",
+        "fdfe:dcba:9876::1/126"
+      ],
+      "auto_route": true,
+      "strict_route": true,
+      "udp_timeout": "5m",
+    },
+    {
+      "type": "mixed",
+      "tag": "mixed-in",
+      "listen": "127.0.0.1",
+      "listen_port": 7890
+    }
+  ],
+  "outbounds": [],
+  "route": {
+    "rules": [
+      {
+        "action": "sniff"
+      },
+      {
+        "protocol": "dns",
+        "action": "hijack-dns"
+      },
+      {
+        "clash_mode": "direct",
+        "outbound": "direct"
+      },
+      {
+        "clash_mode": "global",
+        "outbound": "select"
+      },
+      {
+        "rule_set": "geosite-geolocation-!cn",
+        "outbound": "PROXY"
+      },
+      {
+        "rule_set": [
+          "geoip-cn",
+          "geosite-cn"
+        ],
+        "outbound": "DIRECT"
+      },
+      {
+        "ip_is_private": true,
+        "action": "route",
+        "outbound": "DIRECT"
+      }
+    ],
+    "rule_set": [
+      {
+        "type": "remote",
+        "tag": "geoip-cn",
+        "format": "binary",
+        "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs",
+        "download_detour": "DIRECT"
+      },
+      {
+        "type": "remote",
+        "tag": "geosite-cn",
+        "format": "binary",
+        "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/cn.srs",
+        "download_detour": "DIRECT"
+      },
+      {
+        "type": "remote",
+        "tag": "geosite-geolocation-!cn",
+        "format": "binary",
+        "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-!cn.srs",
+        "download_detour": "DIRECT"
+      },
+      {
+        "type": "remote",
+        "tag": "geosite-dnsblock",
+        "format": "binary",
+        "url": "https://gh.nekorect.eu.org/https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Singbox-regex.srs"
+      }
+    ],
+    "final": "PROXY",
+    "auto_detect_interface": true,
+    "default_domain_resolver": "dns_local"
+  }
+}
